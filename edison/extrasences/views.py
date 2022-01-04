@@ -3,28 +3,30 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from rest_framework import viewsets
 
-psyhic_count = 4
+psyhic_count = 2
 lenght_num = 2
 
 
 class Index(TemplateView):
     def get(self, request, *args, **kwargs):
-        # Создадим случайные номера
-        Session.create_numbers(request)
-
-        # Получим списки номеров
-        psyhics = Session.get_numbers(request)
-
-        # Получим уровень
-        psyhics_level = Session.get_level(request)
-
         template = 'extrasences/index.html'
-        context = {
-            'title': 'Тестирование экстрасенсов',
-            'psyhics': psyhics,
-            'psyhics_level': psyhics_level
-        }
-        return render(request, template, context)
+        if request.GET.get('button'):
+            # Создадим случайные номера
+            Session.create_numbers(request)
+
+            # Получим списки номеров
+            psyhics = Session.get_numbers(request)
+
+            # Получим уровень
+            psyhics_level = Session.get_level(request)
+
+            context = {
+                'title': 'Тестирование экстрасенсов',
+                'psyhics': psyhics,
+                'psyhics_level': psyhics_level
+            }
+            return render(request, template, context)
+        return render(request, template)
 
     def post(self, request, *args, **kwargs):
         # Получим списки номеров
