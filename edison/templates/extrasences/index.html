@@ -1,0 +1,29 @@
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body>
+{% for psyhic in psyhics %}
+<h5>Вариант экстрасенса:
+  {% for num in psyhic %}
+    {{ num }}
+  {% endfor %}
+  </h5>
+{% endfor %}
+{% for level in psyhics_level %}
+<h5>Уровень экстрасенса: {{level }}</h5>
+{% endfor %}
+<h3> Загадайте двузначное число и нажмите кнопку "Загадал"</h3>
+<form method="get">
+  <button type="submit">Загадал!</button>
+</form>
+<h3>Теперь укажите число которое Вы загадали и нажмите кнопку "Отправить"</h3>
+<form method="post">
+  {% csrf_token %}
+  <input type="text" name="user_num" value="0">
+  <button type="submit" class="btn btn-success">Отправить</button>
+</form>
+</body>
+</html>
