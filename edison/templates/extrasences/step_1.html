@@ -1,0 +1,16 @@
+{% extends 'extrasences/base.html' %}
+{% load custom_tags %}
+{% block title %}
+    {{ title }}
+{% endblock %}
+{% block content %}
+<h1>Вы загадали число!<br>Наши экстрасенсы считают так:</h1>
+<hr>
+<div class="d-grid gap-2 col-4 mx-auto">
+    {% for key, value in data.items %}
+        <h4> Имя экстрасенса: {{ value|get_item:"name" }}, он считает Вы загадали число {{ value|get_item:"last_num" }}</h4>
+        <hr>
+    {% endfor %}
+    <a class="btn btn-danger btn-lg" href="\step_2" role="button">Сообщить своё число!</a>
+</div>
+{% endblock %}

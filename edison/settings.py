@@ -20,12 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6g)1vpn@!7_&#u7vre0^lb-01-%@g)kpv%exxi!e(5dv^504ae'
+SECRET_KEY = 'django-insecure-6g)1vpn@!7_&#u@#$%^&*()_+566#^&&7vre0^lb-01-%@g)kpv%exxi!e(5dv^504ae'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', '45.80.71.132']
 
 
 # Application definition
@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'edison',
+    'extrasences'
 ]
 
 MIDDLEWARE = [
@@ -49,7 +51,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'edison.urls'
+ROOT_URLCONF = 'urls'
 
 TEMPLATES = [
     {
@@ -63,6 +65,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'custom_tags': 'edison.template_tags.custom_tags'
+            }
         },
     },
 ]
@@ -114,6 +119,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 STATIC_URL = 'static/'
 

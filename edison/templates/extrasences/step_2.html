@@ -1,0 +1,21 @@
+{% extends 'extrasences/base.html' %}
+{% block title %}
+    {{ title }}
+{% endblock %}
+{% block content %}
+<h1>Какое число Вы загадали!</h1>
+<hr>
+{% if error %}
+    <div class="alert alert-danger" role="alert">
+        <h2>Допущена ошибка при введении числа!</h2>
+    </div>
+{% endif %}
+<div class="d-grid gap-2 col-4 mx-auto">
+    <form method="POST">
+        {% csrf_token %}
+        <input type="number" name="gamer_num" class="form-control form-control-lg" value="{{ value }}">
+        <br>
+        <button type="submit" class="btn btn-danger btn-lg">Отправить!</button>
+    </form>
+</div>
+{% endblock %}
