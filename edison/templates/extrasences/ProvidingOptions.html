@@ -8,9 +8,9 @@
 <hr>
 <div class="d-grid gap-2 col-4 mx-auto">
     {% for key, value in data.items %}
-        <h4> Имя экстрасенса: {{ value|get_item:"name" }}, он считает Вы загадали число {{ value|get_item:"last_num" }}</h4>
+        <h4> Имя экстрасенса: {{ value.name }}, он считает Вы загадали число {{ value.last_num }}</h4>
         <hr>
     {% endfor %}
-    <a class="btn btn-danger btn-lg" href="\step_2" role="button">Сообщить своё число!</a>
+    <a class="btn btn-danger btn-lg" href="\UserSetNumber" role="button">Сообщить своё число!</a>
 </div>
 {% endblock %}

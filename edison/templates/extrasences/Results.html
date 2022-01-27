@@ -1,0 +1,20 @@
+{% extends 'extrasences/base.html' %}
+{% load custom_tags %}
+{% block title %}
+    {{ title }}
+{% endblock %}
+{% block content %}
+<h1>Результаты!</h1>
+<hr>
+<h3> Ваши числа: {{ gamer.numbers_history }}!</h3>
+<hr>
+{% for key, extra in extra_dict.items %}
+<h3>Экстрасенс {{ extra.name }}!<br>
+    Экстрасенс {{ key }}!<br>
+Его предположения: {{ extra.numbers_history }}<br>
+Уровень доверия экстрасенсу: {{ extra.level }}%</h3>
+<hr>
+{% endfor %}
+<h2>Желаете продолжить? Загадывайте число!</h2><br>
+<a class="btn btn-danger btn-lg" href="\ProvidingOptions" role="button">Загадал!</a>
+{% endblock %}

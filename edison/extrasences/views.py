@@ -1,38 +1,91 @@
 from random import randint
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
-from rest_framework import viewsets
-from .serialaizers import SessionSerializer
+from .serialaizers import *
+from .models import *
 
-psyhic_count = 2
-lenght_num = 2
+extra_count = 2
 
 names = ['Поликарп', 'Аполинарий', 'Всеволон', 'Аксондриан', 'Камнотилий']
 
 
-class Start(TemplateView):
+class Index(TemplateView):
     def get(self, request, *args, **kwargs):
-        template = 'extrasences/start.html'
+
+        # gamer = Gamer(numbers_history=[10, 12, 14, 16], last_num=16)
+        # ser = GamerSerializer(gamer)
+        # ser.save_to_session(request)
+        # print()
+        # ser = GamerSerializer()
+        # gamer2 = ser.create_from_session(request)
+        # print()
+        #
+        # idx = randint(0, len(names) - 1)
+        # extra = Extra(names[idx], level=50, numbers_history=[10, 15, 32, 99], last_num=99)
+        # names.pop(idx)
+        # ser = ExtraSerializer(extra)
+        # ser.save_to_session(request)
+        # idx = randint(0, len(names) - 1)
+        # extra = Extra(names[idx], level=50, numbers_history=[10, 15, 32, 99], last_num=99)
+        # names.pop(idx)
+        # ser = ExtraSerializer(extra)
+        # ser.save_to_session(request)
+        # print()
+        # ser = ExtraSerializer()
+        # extra_dict = ser.create_from_session(request)
+        #
+        # print()
+
+        template = 'extrasences/Index.html'
         context = {
             'title': 'Портал экстрасенсов',
-        }
-        return render(request, template)
-
-
-class Step1(TemplateView):
-    def get(self, request, *args, **kwargs):
-        data = Process.step_1(request, 2)
-        template = 'extrasences/step_1.html'
-        context = {
-            'title': 'Тестирование экстрасенсов',
-            'data': data,
         }
         return render(request, template, context)
 
 
-class Step2(TemplateView):
+class ProvidingOptions(TemplateView):
     def get(self, request, *args, **kwargs):
-        template = 'extrasences/step_2.html'
+        # Запросим словарик экстрасенсов у сериализатора (из сессии)
+        ser = ExtraSerializer()
+        extra_dict = ser.create_from_session(request)
+
+        # Если там есть экстрасенсы
+        if extra_dict:
+            for extra in extra_dict:
+                # Создание у экстрасенса вариантов
+                extra_dict[extra].get_var()
+
+        # А если их там нет, то значит это первый цикл игрока и экстрасенсов нужно создать с нуля
+        else:
+            extra_dict = {}
+            for i in range(extra_count):
+                # Создание экстрасенса
+                idx = randint(0, len(names) - 1)
+                extra = Extra(names[idx])
+                names.pop(idx)
+
+                # Создание у экстрасенса вариантов
+                extra.get_var()
+
+                # Запись экстрасенса в словарь
+                extra_dict[i] = extra
+
+        # Отдадим сериалайзеру для записи в сессию экстрасенса
+        for extra in extra_dict:
+            ser = ExtraSerializer(extra_dict[extra])
+            ser.save_to_session(request)
+
+        template = 'extrasences/ProvidingOptions.html'
+        context = {
+            'title': 'Тестирование экстрасенсов',
+            'data': extra_dict,
+        }
+        return render(request, template, context)
+
+
+class UserSetNumber(TemplateView):
+    def get(self, request, *args, **kwargs):
+        template = 'extrasences/UserSetNumber.html'
         context = {
             'title': 'Тестирование экстрасенсов',
             'error': False,
@@ -41,14 +94,33 @@ class Step2(TemplateView):
         return render(request, template, context)
 
     def post(self, request, *args, **kwargs):
+        # Получим число от игрока
         gamer_num = request.POST.get('gamer_num')
+
+        # Проверим
         if gamer_num.isdigit():
             gamer_num = int(gamer_num)
-            if 9 < gamer_num < 99:
-                Process.Step_2(request, gamer_num)
-                return redirect(to='finish')
+            if 9 < gamer_num < 100:
 
-        template = 'extrasences/step_2.html'
+                # Запросим игрока у сериализатора (из сессии)
+                ser = GamerSerializer()
+                gamer = ser.create_from_session(request)
+
+                # если нет, создадим с нуля
+                if gamer is None:
+                    gamer = Gamer()
+
+                # Запишем число загаданное игроком
+                gamer.set_number(gamer_num)
+
+                # Отдадим сериалайзеру для записи в сессию
+                ser = GamerSerializer(gamer)
+                ser.save_to_session(request)
+
+                # Отправим игрока на страницу результатов
+                return redirect(to='Results')
+
+        template = 'extrasences/UserSetNumber.html'
         context = {
             'title': 'Тестирование экстрасенсов',
             'error': True,
@@ -57,129 +129,28 @@ class Step2(TemplateView):
         return render(request, template, context)
 
 
-class Finish(TemplateView):
+class Results(TemplateView):
     def get(self, request, *args, **kwargs):
-        data = Process.finish(request)
-        template = 'extrasences/finish.html'
+        # Запросим словарик экстрасенсов и игрока у сериализатора (из сессии)
+        ser = ExtraSerializer()
+        extra_dict = ser.create_from_session(request)
+        ser = GamerSerializer()
+        gamer = ser.create_from_session(request)
+
+        # Пробежимся по всем экстрасенсам
+        for extra in extra_dict:
+            # сообщаем число загаданное игроком, тем самым меняем уровень экстрасенса
+            extra_dict[extra].check(gamer.get_last_num())
+
+            # Отдадим сериалайзеру для записи в сессию экстрасенса
+            test = extra_dict[extra]
+            ser = ExtraSerializer(test)
+            ser.save_to_session(request)
+
+        template = 'extrasences/Results.html'
         context = {
             'title': 'Тестирование экстрасенсов',
-            'extra': data['extra'],
-            'gamer': data['gamer']
+            'extra_dict': extra_dict,
+            'gamer': gamer
         }
         return render(request, template, context)
-
-
-class Gamer:
-    numbers = []
-    last_num = 0
-
-    def __init__(self, numbers=None, last_num=0):
-        if numbers is None:
-            numbers = []
-        self.numbers = numbers
-        self.last_num = last_num
-
-    def set_number(self, num):
-        self.numbers.append(num)
-        self.last_num = num
-
-    def get_history(self):
-        return self.numbers
-
-    def get_last_num(self):
-        return self.last_num
-
-
-class Extra:
-    name = ''
-    level = 50
-    numbers = []
-    last_num = 0
-
-    def __init__(self, name, level=50, numbers=None, last_num = 0):
-        if numbers is None:
-            numbers = []
-        self.level = level
-        self.numbers = numbers
-        self.name = name
-        self.last_num = last_num
-
-    def get_vars(self, count=1, lenght=2):
-        res_list = []
-        start = 10 ** (lenght - 1)
-        stop = 10 ** lenght - 1
-
-        if count > 1:
-            while count > 0:
-                res_list.append(randint(start, stop))
-            self.numbers.append(res_list)
-            return res_list
-        random_num = randint(start, stop)
-        self.numbers.append(random_num)
-        self.last_num = random_num
-        return random_num
-
-    def get_history(self):
-        return self.numbers
-
-    def check(self, gamer_num):
-        if self.last_num == gamer_num:
-            self.level += 1
-        else:
-            self.level -= 1
-
-    def get_level(self):
-        return self.level
-
-
-class Process:
-    @staticmethod
-    def step_1(request, extra_count):
-        extra_dict = {}
-        data = SessionSerializer.fr(request)
-        if 'extra' in data:
-            extra = data['extra']
-            for key, value in extra.items():
-                extra = Extra(value['name'], value['level'], value['numbers'], value['last_num'])
-                extra.get_vars()
-                extra_dict[key] = extra.__dict__
-
-        else:
-            while extra_count > 0:
-                extra = Extra(names[randint(0, len(names)-1)])
-                extra.get_vars()
-                extra_dict[extra_count] = extra.__dict__
-                extra_count -= 1
-
-        data['extra'] = extra_dict
-        SessionSerializer.to(request, data)
-
-        return extra_dict
-
-    @staticmethod
-    def Step_2(request, gamer_num):
-        data = SessionSerializer.fr(request)
-        if 'gamer' in data:
-            gamer = Gamer(data['gamer']['numbers'], int(data['gamer']['last_num']))
-        else:
-            gamer = Gamer()
-
-        gamer.set_number(gamer_num)
-        data['gamer'] = gamer.__dict__
-        SessionSerializer.to(request, data)
-
-    @staticmethod
-    def finish(request):
-        extra_dict = {}
-        data = SessionSerializer.fr(request)
-        extra = data['extra']
-        gamer = Gamer(data['gamer']['numbers'], int(data['gamer']['last_num']))
-        for key, value in extra.items():
-            extra = Extra(value['name'], value['level'], value['numbers'], int(value['last_num']))
-            extra.check(gamer.get_last_num())
-            extra_dict[key] = extra.__dict__
-
-        data['extra'] = extra_dict
-        SessionSerializer.to(request, data)
-
-        return data
